@@ -12,6 +12,7 @@ import {
   Award
 } from 'lucide-react';
 import { SITE_CONFIG, getWhatsAppUrl } from '../config/siteConfig';
+import { FounderImageFrame } from './FounderImageFrame';
 
 interface AboutSectionProps {
   onOpenQuote: (serviceName?: string) => void;
@@ -41,9 +42,12 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
 
               {/* Founder Header */}
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-[#0A2A66] border-2 border-white flex items-center justify-center text-white text-2xl font-black shadow-md font-heading">
-                  AS
-                </div>
+                <FounderImageFrame 
+                  size="xl" 
+                  shape="rounded" 
+                  variant="dark" 
+                  className="w-16 h-16 sm:w-20 sm:h-20 shrink-0" 
+                />
                 <div>
                   <h3 className="text-xl font-extrabold text-[#0A2A66] font-heading">
                     {SITE_CONFIG.founderName}

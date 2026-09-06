@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MessageSquare, X, Phone, ArrowRight } from 'lucide-react';
 import { SITE_CONFIG, getWhatsAppUrl } from '../config/siteConfig';
+import { FounderImageFrame } from './FounderImageFrame';
 
 interface WhatsAppButtonProps {
   onTrackAction: (actionType: string, description: string) => void;
@@ -23,9 +24,7 @@ export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({ onTrackAction })
         >
           <div className="flex items-start justify-between pb-2 border-b border-slate-100">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                AS
-              </div>
+              <FounderImageFrame size="sm" shape="circle" variant="dark" className="border-emerald-500 bg-emerald-600 shrink-0" />
               <div>
                 <h4 className="text-xs font-bold text-[#0A2A66]">
                   {SITE_CONFIG.founderName}

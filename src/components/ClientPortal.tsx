@@ -66,12 +66,20 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
       // Fetch Transactions
       const txRes = await fetch(`/api/transactions?clientId=${currentUser.id}`);
       const txData = await txRes.json();
-      if (txData.transactions) setTransactions(txData.transactions);
+      if (txData && txData.transactions) {
+        setTransactions(txData.transactions);
+      } else if (Array.isArray(txData)) {
+        setTransactions(txData);
+      }
 
       // Fetch Activities
       const actRes = await fetch(`/api/activities?clientId=${currentUser.id}`);
       const actData = await actRes.json();
-      if (actData.activities) setActivities(actData.activities);
+      if (actData && actData.activities) {
+        setActivities(actData.activities);
+      } else if (Array.isArray(actData)) {
+        setActivities(actData);
+      }
     } catch (err) {
       console.error('Error fetching client portal data:', err);
     } finally {

@@ -70,9 +70,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const txData = await txRes.json();
       const actData = await actRes.json();
 
-      if (inqData.inquiries) setInquiries(inqData.inquiries);
-      if (txData.transactions) setTransactions(txData.transactions);
-      if (actData.activities) setActivities(actData.activities);
+      if (inqData && inqData.inquiries) setInquiries(inqData.inquiries);
+      else if (Array.isArray(inqData)) setInquiries(inqData);
+
+      if (txData && txData.transactions) setTransactions(txData.transactions);
+      else if (Array.isArray(txData)) setTransactions(txData);
+
+      if (actData && actData.activities) setActivities(actData.activities);
+      else if (Array.isArray(actData)) setActivities(actData);
 
       // Seed standard clients list
       setClients([

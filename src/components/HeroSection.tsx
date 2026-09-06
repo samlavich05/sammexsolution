@@ -14,6 +14,7 @@ import {
   Code
 } from 'lucide-react';
 import { SITE_CONFIG, getWhatsAppUrl } from '../config/siteConfig';
+import { FounderImageFrame } from './FounderImageFrame';
 
 interface HeroSectionProps {
   onOpenQuote: (serviceName?: string) => void;
@@ -130,9 +131,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
             {/* Trust Indicator & Founder Endorsement */}
             <div className="pt-3 flex items-center gap-3 text-xs text-slate-300">
-              <div className="w-8 h-8 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-white font-bold">
-                AS
-              </div>
+              <FounderImageFrame size="sm" shape="circle" variant="dark" className="border-white/40 bg-white/20 shrink-0" />
               <div>
                 <p className="font-semibold text-white">
                   Founded & Directed by {SITE_CONFIG.founderName}

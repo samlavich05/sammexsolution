@@ -34,6 +34,7 @@ interface StoredClient {
   id: string;
   fullName: string;
   email: string;
+  password?: string;
   phone: string;
   company: string;
   businessType: string;
@@ -92,6 +93,7 @@ const clients: StoredClient[] = [
     id: 'client-admin',
     fullName: 'Animashaun Abdul Salam',
     email: 'salamanimashaun05@gmail.com',
+    password: 'password123',
     phone: '+2349167631413',
     company: 'Sammex Solution',
     businessType: 'Digital Agency & Web Development',
@@ -104,9 +106,42 @@ const clients: StoredClient[] = [
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString(),
   },
   {
+    id: 'client-admin-alias',
+    fullName: 'Animashaun Abdul Salam (Admin)',
+    email: 'admin@sammexsolution.com',
+    password: 'password123',
+    phone: '+2349167631413',
+    company: 'Sammex Solution',
+    businessType: 'Digital Agency & Web Development',
+    website: 'https://sammexsolution.com',
+    location: 'Lagos / Global',
+    servicesInterestedIn: ['WordPress Website Design', 'SEO Services', 'AI Automation', 'GEO Services'],
+    projectNotes: 'Administrator Demo Account.',
+    communicationPreferences: 'Both',
+    role: 'admin',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString(),
+  },
+  {
     id: 'client-sarah',
+    fullName: 'Dr. Sarah Jenkins',
+    email: 'sarah@luminahealth.com',
+    password: 'password123',
+    phone: '+1 (415) 890-4421',
+    company: 'Lumina Health Clinic',
+    businessType: 'Private Medical Care',
+    website: 'https://luminahealthclinic.com',
+    location: 'San Francisco, CA',
+    servicesInterestedIn: ['WordPress Website Design', 'SEO & GEO'],
+    projectNotes: 'Requires high-velocity local map pack ranking and Generative Engine Optimization.',
+    communicationPreferences: 'Email',
+    role: 'client',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
+  },
+  {
+    id: 'client-sarah-nexus',
     fullName: 'Sarah Jenkins',
     email: 'sarah.jenkins@nexushealth.org',
+    password: 'password123',
     phone: '+1 (555) 389-9210',
     company: 'Nexus Health Clinics',
     businessType: 'Healthcare & Clinical Diagnostics',
@@ -122,6 +157,7 @@ const clients: StoredClient[] = [
     id: 'client-marcus',
     fullName: 'Marcus Vance',
     email: 'marcus.v@apexadvisory.com',
+    password: 'password123',
     phone: '+44 20 7946 0912',
     company: 'Apex Capital Advisory',
     businessType: 'Financial Wealth Advisory',
@@ -442,15 +478,15 @@ app.post('/api/inquiries', async (req, res) => {
 // Get Inquiries (for Admin / Client Portal)
 app.get('/api/inquiries', (req, res) => {
   const { email } = req.query;
+  let result = inquiries;
   if (email && typeof email === 'string') {
-    const userInquiries = inquiries.filter(inq => inq.email.toLowerCase() === email.toLowerCase());
-    return res.json(userInquiries);
+    result = inquiries.filter(inq => inq.email.toLowerCase() === email.toLowerCase());
   }
-  res.json(inquiries);
+  res.json({ success: true, inquiries: result });
 });
 
-// Update Inquiry Status (Admin)
-app.patch('/api/inquiries/:id', (req, res) => {
+// Update Inquiry Status (Admin) - support both /api/inquiries/:id and /api/inquiries/:id/status
+const updateInquiryHandler = (req: express.Request, res: express.Response) => {
   const { id } = req.params;
   const { status, notes } = req.body;
   const inquiry = inquiries.find(inq => inq.id === id);
@@ -462,53 +498,185 @@ app.patch('/api/inquiries/:id', (req, res) => {
   if (notes !== undefined) inquiry.notes = notes;
 
   res.json({ success: true, inquiry });
+};
+
+app.patch('/api/inquiries/:id', updateInquiryHandler);
+app.patch('/api/inquiries/:id/status', updateInquiryHandler);
+
+// Client Registration / Account Creation
+app.post('/api/auth/signup', (req, res) => {
+  try {
+    const { email, password, fullName, company, phone, businessType, servicesInterestedIn } = req.body;
+
+    if (!email || typeof email !== 'string' || !email.trim()) {
+      return res.status(400).json({ error: 'Valid email address is required' });
+    }
+    if (!fullName || typeof fullName !== 'string' || !fullName.trim()) {
+      return res.status(400).json({ error: 'Full name is required' });
+    }
+    if (!password || typeof password !== 'string' || password.length < 3) {
+      return res.status(400).json({ error: 'Password must be at least 3 characters' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = fullName.trim();
+    const cleanCompany = String(company || '').trim();
+    const cleanPhone = String(phone || '').trim();
+
+    // Check if client with this email already exists
+    let existingClient = clients.find(c => c.email.toLowerCase() === cleanEmail);
+    if (existingClient) {
+      // Update with any newly provided details and log them in
+      if (cleanCompany) existingClient.company = cleanCompany;
+      if (cleanPhone) existingClient.phone = cleanPhone;
+      if (cleanName) existingClient.fullName = cleanName;
+      existingClient.password = password;
+
+      activities.unshift({
+        id: 'act-' + Date.now(),
+        clientId: existingClient.id,
+        clientName: existingClient.fullName,
+        actionType: 'login',
+        description: `Existing client logged in via registration (${existingClient.email})`,
+        timestamp: new Date().toISOString()
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Account recognized. Logged in successfully.',
+        user: existingClient
+      });
+    }
+
+    // Role assignment: founder email or admin aliases get admin role
+    const isAdmin = cleanEmail === 'salamanimashaun05@gmail.com' || cleanEmail === 'admin@sammexsolution.com';
+
+    const newClient: StoredClient = {
+      id: 'client-' + Date.now(),
+      fullName: cleanName,
+      email: cleanEmail,
+      password: String(password),
+      phone: cleanPhone,
+      company: cleanCompany || 'Client Business',
+      businessType: businessType || 'Growing Business',
+      website: '',
+      location: '',
+      servicesInterestedIn: Array.isArray(servicesInterestedIn) && servicesInterestedIn.length > 0
+        ? servicesInterestedIn
+        : ['WordPress Website Design', 'SEO Services'],
+      projectNotes: 'Account registered through Sammex Client Portal.',
+      communicationPreferences: 'Both',
+      role: isAdmin ? 'admin' : 'client',
+      createdAt: new Date().toISOString()
+    };
+
+    clients.unshift(newClient);
+
+    // Initial Welcome Milestone / Onboarding Project in Client Ledger
+    transactions.unshift({
+      id: 'txn-' + Date.now(),
+      clientId: newClient.id,
+      clientName: newClient.fullName + (newClient.company ? ` (${newClient.company})` : ''),
+      serviceRequested: 'Onboarding & Project Discovery Consultation',
+      projectStatus: 'Planning',
+      paymentStatus: 'Pending',
+      date: new Date().toLocaleDateString(),
+      amount: 0,
+      currency: 'USD',
+      referenceId: `SMX-${Date.now().toString().slice(-6)}`,
+      notes: 'Welcome to Sammex Solution! Connect with Animashaun Abdul Salam via WhatsApp (+2349167631413) to start your project.'
+    });
+
+    // Record activity
+    activities.unshift({
+      id: 'act-' + Date.now(),
+      clientId: newClient.id,
+      clientName: newClient.fullName,
+      actionType: 'account_created',
+      description: `New client account registered: ${newClient.fullName} (${newClient.company || 'Direct'})`,
+      timestamp: new Date().toISOString()
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Account created successfully!',
+      user: newClient
+    });
+  } catch (err: any) {
+    console.error('Error during signup:', err);
+    return res.status(500).json({ error: 'Server error processing registration. Please try again.' });
+  }
 });
 
 // Client Authentication / Quick Demo Switch
 app.post('/api/auth/login', (req, res) => {
-  const { email, role } = req.body;
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
+  try {
+    const { email, password, role } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    let client = clients.find(c => c.email.toLowerCase() === cleanEmail);
+
+    // Support Admin aliases
+    if (cleanEmail === 'admin@sammexsolution.com' || cleanEmail === 'salamanimashaun05@gmail.com') {
+      client = clients.find(c => c.role === 'admin') || client;
+    } else if (cleanEmail === 'sarah@luminahealth.com' || cleanEmail === 'sarah.jenkins@nexushealth.org') {
+      client = clients.find(c => c.email.includes('sarah')) || client;
+    }
+
+    if (!client) {
+      // Auto-create client profile so client is never blocked
+      const autoFullName = cleanEmail.split('@')[0].replace(/[._]/g, ' ');
+      client = {
+        id: 'client-' + Date.now(),
+        fullName: autoFullName.charAt(0).toUpperCase() + autoFullName.slice(1),
+        email: cleanEmail,
+        password: password ? String(password) : 'password123',
+        phone: '',
+        company: '',
+        businessType: 'Business Owner',
+        website: '',
+        location: '',
+        servicesInterestedIn: ['WordPress Website Design'],
+        projectNotes: 'Signed in via client portal',
+        communicationPreferences: 'Email',
+        role: (cleanEmail === 'salamanimashaun05@gmail.com' || cleanEmail === 'admin@sammexsolution.com' || role === 'admin') ? 'admin' : 'client',
+        createdAt: new Date().toISOString()
+      };
+      clients.push(client);
+
+      // Create initial onboarding transaction
+      transactions.unshift({
+        id: 'txn-' + Date.now(),
+        clientId: client.id,
+        clientName: client.fullName,
+        serviceRequested: 'Onboarding & Technical Consultation',
+        projectStatus: 'Planning',
+        paymentStatus: 'Pending',
+        date: new Date().toLocaleDateString(),
+        amount: 0,
+        currency: 'USD',
+        referenceId: `SMX-${Date.now().toString().slice(-6)}`,
+        notes: 'Welcome to Sammex Solution! Connect via WhatsApp (+2349167631413) to discuss project specifications.'
+      });
+    }
+
+    activities.unshift({
+      id: 'act-' + Date.now(),
+      clientId: client.id,
+      clientName: client.fullName,
+      actionType: 'login',
+      description: `User signed in (${client.role})`,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({ success: true, user: client });
+  } catch (err: any) {
+    console.error('Error during login:', err);
+    res.status(500).json({ error: 'Server error during sign in. Please try again.' });
   }
-
-  const cleanEmail = String(email).trim().toLowerCase();
-  let client = clients.find(c => c.email.toLowerCase() === cleanEmail);
-
-  // If logging in as founder admin email
-  if (cleanEmail === 'salamanimashaun05@gmail.com') {
-    client = clients.find(c => c.role === 'admin') || client;
-  }
-
-  if (!client) {
-    // If not found, create client session automatically
-    client = {
-      id: 'client-' + Date.now(),
-      fullName: cleanEmail.split('@')[0].replace(/[._]/g, ' '),
-      email: cleanEmail,
-      phone: '',
-      company: '',
-      businessType: 'Business Owner',
-      website: '',
-      location: '',
-      servicesInterestedIn: ['WordPress Website Design'],
-      projectNotes: '',
-      communicationPreferences: 'Email',
-      role: role === 'admin' ? 'admin' : 'client',
-      createdAt: new Date().toISOString()
-    };
-    clients.push(client);
-  }
-
-  activities.unshift({
-    id: 'act-' + Date.now(),
-    clientId: client.id,
-    clientName: client.fullName,
-    actionType: 'login',
-    description: `User signed in (${client.role})`,
-    timestamp: new Date().toISOString()
-  });
-
-  res.json({ success: true, user: client });
 });
 
 // Update Client Profile
@@ -545,17 +713,17 @@ app.put('/api/auth/profile', (req, res) => {
 
 // Get Clients List (Admin)
 app.get('/api/clients', (req, res) => {
-  res.json(clients);
+  res.json({ success: true, clients });
 });
 
 // Transactions
 app.get('/api/transactions', (req, res) => {
   const { clientId } = req.query;
+  let result = transactions;
   if (clientId && typeof clientId === 'string') {
-    const filtered = transactions.filter(t => t.clientId === clientId);
-    return res.json(filtered);
+    result = transactions.filter(t => t.clientId === clientId || t.clientId === 'client-general');
   }
-  res.json(transactions);
+  res.json({ success: true, transactions: result });
 });
 
 // Add / Update Transaction (Admin)
@@ -583,10 +751,13 @@ app.post('/api/transactions', (req, res) => {
 // Activity Tracking
 app.get('/api/activities', (req, res) => {
   const { clientId } = req.query;
+  let result = activities;
   if (clientId && typeof clientId === 'string') {
-    return res.json(activities.filter(a => a.clientId === clientId));
+    result = activities.filter(a => a.clientId === clientId);
+  } else {
+    result = activities.slice(0, 50);
   }
-  res.json(activities.slice(0, 50));
+  res.json({ success: true, activities: result });
 });
 
 app.post('/api/activities', (req, res) => {

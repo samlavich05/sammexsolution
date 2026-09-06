@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { SITE_CONFIG, getWhatsAppUrl } from '../config/siteConfig';
 import { ClientProfile } from '../types';
+import { LogoFrame } from './LogoFrame';
 
 interface NavbarProps {
   currentView: string;
@@ -81,17 +82,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Logo & Brand Identity */}
-          <button 
-            id="nav-brand-logo"
-            onClick={() => handleNavClick('home')} 
-            className="flex items-center gap-3 group text-left cursor-pointer focus:outline-none"
-          >
-            <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-              <span className="font-extrabold text-[#0A2A66] text-xl font-heading tracking-tight">S</span>
-            </div>
-            <div>
+          <div className="flex items-center gap-3">
+            <LogoFrame size="md" variant="dark" />
+            <button 
+              id="nav-brand-logo"
+              onClick={() => handleNavClick('home')} 
+              className="group text-left cursor-pointer focus:outline-none"
+            >
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-white text-lg tracking-tight font-heading">
+                <span className="font-extrabold text-white text-lg tracking-tight font-heading group-hover:text-white/90 transition-colors">
                   SAMMEX
                 </span>
                 <span className="font-semibold text-white/90 text-lg tracking-tight font-heading">
@@ -101,8 +100,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <p className="text-[10px] text-slate-300 font-medium tracking-wide uppercase">
                 Digital Growth & Web Engineering
               </p>
-            </div>
-          </button>
+            </button>
+          </div>
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">

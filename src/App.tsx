@@ -17,6 +17,10 @@ import { AuthModal } from './components/AuthModal';
 import { ClientPortal } from './components/ClientPortal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Footer } from './components/Footer';
+import { LogoProvider } from './context/LogoContext';
+import { LogoUploadModal } from './components/LogoUploadModal';
+import { FounderImageProvider } from './context/FounderImageContext';
+import { FounderImageUploadModal } from './components/FounderImageUploadModal';
 import { ServiceItem, CaseStudy, ClientProfile } from './types';
 
 export default function App() {
@@ -93,8 +97,10 @@ export default function App() {
 
   // Unified layout
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-slate-800 antialiased selection:bg-[#0A2A66] selection:text-white">
-      {/* Persistent Navigation */}
+    <LogoProvider>
+      <FounderImageProvider>
+        <div className="min-h-screen bg-white flex flex-col font-sans text-slate-800 antialiased selection:bg-[#0A2A66] selection:text-white">
+          {/* Persistent Navigation */}
       <Navbar
         currentView={currentView}
         onNavigate={(view) => {
@@ -247,6 +253,14 @@ export default function App() {
           onTrackAction={handleTrackAction}
         />
       )}
+
+      {/* Brand Logo Upload & Customizer Modal */}
+      <LogoUploadModal onTrackAction={handleTrackAction} />
+
+      {/* Founder Profile Image Upload Modal */}
+      <FounderImageUploadModal onTrackAction={handleTrackAction} />
     </div>
+  </FounderImageProvider>
+</LogoProvider>
   );
 }

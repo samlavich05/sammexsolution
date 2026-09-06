@@ -10,6 +10,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { SITE_CONFIG, getWhatsAppUrl } from '../config/siteConfig';
+import { LogoFrame } from './LogoFrame';
 
 interface FooterProps {
   onNavigate: (view: string) => void;
@@ -44,9 +45,7 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Col 1 & 2: Brand & Positioning */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#0A2A66] font-extrabold text-xl shadow">
-                S
-              </div>
+              <LogoFrame size="md" variant="dark" />
               <div>
                 <span className="font-extrabold text-white text-xl tracking-tight font-heading">
                   SAMMEX
