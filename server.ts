@@ -15,6 +15,9 @@ const PORT = 3000;
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Always serve static assets directly from public/ directory
+app.use(express.static(path.join(process.cwd(), 'public')));
+
 // Lazy Google GenAI initialization
 function getAiClient(): GoogleGenAI | null {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -877,6 +880,9 @@ async function startServer() {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
+      if (req.path.match(/\.(jpg|jpeg|png|gif|svg|webp|ico|css|js|map)$/)) {
+        return res.status(404).send('Asset not found');
+      }
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

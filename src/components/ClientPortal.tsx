@@ -132,9 +132,17 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="w-14 h-14 rounded-2xl bg-[#0A2A66] text-white font-bold text-xl flex items-center justify-center shadow">
+            <div className="w-14 h-14 rounded-2xl bg-[#0A2A66] text-white font-bold text-xl flex items-center justify-center shadow overflow-hidden">
               {currentUser.avatarUrl ? (
-                <img src={currentUser.avatarUrl} alt={currentUser.fullName} className="w-full h-full object-cover rounded-2xl" />
+                <img 
+                  src={currentUser.avatarUrl} 
+                  alt={currentUser.fullName} 
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = 'none';
+                  }}
+                  className="w-full h-full object-cover rounded-2xl" 
+                />
               ) : (
                 currentUser.fullName.split(' ').map(n => n[0]).join('')
               )}

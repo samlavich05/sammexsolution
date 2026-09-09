@@ -100,6 +100,9 @@ export const PortfolioSection: React.FC<PortfolioSectionProps> = ({
                     src={project.imageUrl}
                     alt={project.title}
                     referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.opacity = '0.2';
+                    }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
                     loading="lazy"
                   />

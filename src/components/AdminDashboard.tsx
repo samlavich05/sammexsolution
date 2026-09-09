@@ -16,10 +16,16 @@ import {
   FileText,
   TrendingUp,
   Filter,
-  Plus
+  Plus,
+  Image as ImageIcon,
+  Lock,
+  Camera,
+  RefreshCw
 } from 'lucide-react';
 import { ClientProfile, InquirySubmission, TransactionRecord, ClientActivity } from '../types';
 import { SITE_CONFIG, getWhatsAppUrl } from '../config/siteConfig';
+import { useBrandLogo } from '../context/LogoContext';
+import { useFounderImage } from '../context/FounderImageContext';
 
 interface AdminDashboardProps {
   currentUser: ClientProfile;
@@ -34,7 +40,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onNavigateHome,
   onTrackAction
 }) => {
-  const [activeTab, setActiveTab] = useState<'inquiries' | 'clients' | 'transactions' | 'export'>('inquiries');
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'clients' | 'transactions' | 'export' | 'brand-media'>('inquiries');
+  const { logoUrl, openModal: openLogoModal, updateLogo } = useBrandLogo();
+  const { imageUrl: founderImageUrl, openModal: openFounderModal, updateImage: updateFounderImage } = useFounderImage();
   const [inquiries, setInquiries] = useState<InquirySubmission[]>([]);
   const [clients, setClients] = useState<ClientProfile[]>([]);
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
@@ -285,7 +293,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             { id: 'inquiries', label: `Inquiries (${inquiries.length})`, icon: <Inbox className="w-4 h-4" /> },
             { id: 'clients', label: `Clients (${clients.length})`, icon: <Users className="w-4 h-4" /> },
             { id: 'transactions', label: `Projects & Payments (${transactions.length})`, icon: <CreditCard className="w-4 h-4" /> },
-            { id: 'export', label: 'Export & Activity Logs', icon: <Download className="w-4 h-4" /> }
+            { id: 'export', label: 'Export & Activity Logs', icon: <Download className="w-4 h-4" /> },
+            { id: 'brand-media', label: 'Brand & Media Assets', icon: <ImageIcon className="w-4 h-4" /> }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -563,6 +572,181 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: BRAND & MEDIA ASSETS (PERMANENT DEPLOYMENT CONTROLS) */}
+        {activeTab === 'brand-media' && (
+          <div className="space-y-6">
+            {/* Security & Deployment Status Banner */}
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-emerald-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700 shrink-0">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-emerald-950 font-heading">
+                    Permanent Production Assets & Deployment Lockdown Active
+                  </h4>
+                  <p className="text-xs text-emerald-800 mt-0.5">
+                    Image frames across the public website (Navbar, Footer, Hero, About Section, and WhatsApp) are permanently locked. Public visitors cannot edit, upload, or tamper with any image.
+                  </p>
+                </div>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-200 text-emerald-900 shrink-0 border border-emerald-300">
+                Locked on Public Site
+              </span>
+            </div>
+
+            {/* Asset Management Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Brand Logo Card */}
+              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-[#0A2A66]" />
+                    <h4 className="text-sm font-bold text-[#0A2A66] font-heading">
+                      Official Sammex Brand Logo
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                    /brand/logo.jpg
+                  </span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                  {/* Live Display Frame */}
+                  <div className="w-20 h-20 rounded-2xl bg-[#0A2A66] border-2 border-[#0A2A66] p-1 shadow-md flex items-center justify-center shrink-0">
+                    {logoUrl ? (
+                      <img 
+                        src={logoUrl} 
+                        alt="Sammex Solution Brand Logo" 
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = 'none';
+                        }}
+                        className="w-full h-full object-contain rounded-xl"
+                      />
+                    ) : (
+                      <span className="text-white font-black text-xl font-heading">S</span>
+                    )}
+                  </div>
+                  <div className="text-xs space-y-1 text-center sm:text-left">
+                    <p className="font-bold text-slate-800">Sammex Solution Vector Logo</p>
+                    <p className="text-slate-500 text-[11px]">
+                      Permanent across Navbar, Footer, and Client Portal headers.
+                    </p>
+                    <p className="text-emerald-700 text-[11px] font-semibold flex items-center gap-1 justify-center sm:justify-start">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Static file bundled in production
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    onClick={() => {
+                      openLogoModal();
+                      onTrackAction('admin_media_edit', 'Opened logo customizer from admin dashboard');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#0A2A66] hover:bg-black text-white text-xs font-bold border border-black shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>Change Permanent Logo</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      updateLogo(SITE_CONFIG.brandLogoUrl);
+                      onTrackAction('admin_media_reset', 'Reset brand logo to default bundled asset');
+                    }}
+                    className="px-3.5 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Reset to Bundled Asset</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Founder Profile Image Card */}
+              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-[#0A2A66]" />
+                    <h4 className="text-sm font-bold text-[#0A2A66] font-heading">
+                      Founder Profile Portrait
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                    /brand/founder.jpg
+                  </span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                  {/* Live Display Frame */}
+                  <div className="w-20 h-20 rounded-2xl bg-[#0A2A66] border-2 border-white shadow-md p-0.5 overflow-hidden flex items-center justify-center shrink-0">
+                    {founderImageUrl ? (
+                      <img 
+                        src={founderImageUrl} 
+                        alt={SITE_CONFIG.founderName} 
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = 'none';
+                        }}
+                        className="w-full h-full object-cover rounded-xl"
+                      />
+                    ) : (
+                      <span className="text-white font-black text-xl font-heading">AS</span>
+                    )}
+                  </div>
+                  <div className="text-xs space-y-1 text-center sm:text-left">
+                    <p className="font-bold text-slate-800">{SITE_CONFIG.founderName}</p>
+                    <p className="text-slate-500 text-[11px]">
+                      {SITE_CONFIG.founderRole}
+                    </p>
+                    <p className="text-emerald-700 text-[11px] font-semibold flex items-center gap-1 justify-center sm:justify-start">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Permanent founder card & endorsement badge
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    onClick={() => {
+                      openFounderModal();
+                      onTrackAction('admin_media_edit', 'Opened founder photo customizer from admin dashboard');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#0A2A66] hover:bg-black text-white text-xs font-bold border border-black shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>Change Permanent Photo</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      updateFounderImage(SITE_CONFIG.founderImageUrl);
+                      onTrackAction('admin_media_reset', 'Reset founder photo to default bundled asset');
+                    }}
+                    className="px-3.5 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Reset to Bundled Asset</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Permanent Deployment Assurance Note */}
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1.5">
+              <p className="font-bold text-slate-800 flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-[#0A2A66]" />
+                <span>Production Deployment Guarantee</span>
+              </p>
+              <p>
+                Both media files reside in the project repository at <code className="bg-white px-1.5 py-0.5 rounded border text-[#0A2A66]">public/brand/logo.jpg</code> and <code className="bg-white px-1.5 py-0.5 rounded border text-[#0A2A66]">public/brand/founder.jpg</code>.
+                When you deploy the app, Vite automatically bundles these images into the static distribution directory <code className="bg-white px-1.5 py-0.5 rounded border text-[#0A2A66]">dist/brand/</code>.
+                They are permanently served to all website visitors across any browser or device, with zero user-editable controls on the public website.
+              </p>
             </div>
           </div>
         )}

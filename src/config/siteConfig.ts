@@ -14,6 +14,9 @@ export const SITE_CONFIG = {
   supportingMessage: 'Design. Develop. Optimize. Automate. Grow.',
   description: 'From professional WordPress websites, high-converting landing pages, and Shopify stores to SEO, GEO, website optimization, and AI automation, Sammex Solution helps businesses build a stronger, smarter, and more profitable online presence.',
   
+  brandLogoUrl: '/brand/logo.jpg',
+  founderImageUrl: '/brand/founder.jpg',
+  
   contact: {
     email: 'salamanimashaun05@gmail.com',
     whatsapp: '+2349167631413',
